@@ -1,0 +1,17 @@
+param ($fullPath)
+
+if (-not $fullPath) {
+    # $fullpath = $env:PSModulePath -split ":(?!\\)|;|," |
+    # Where-Object { $_ -notlike ([System.Environment]::GetFolderPath("UserProfile") + "*") -and $_ -notlike "$pshome*" } |
+    # Select-Object -First 1
+    
+    $fullpath = $env:PSModulePath -split ":(?!\\)|;|," |
+    Select-Object -First 1
+    $fullPath = Join-Path $fullPath -ChildPath "PSCodeAgent"
+}
+
+Push-location $PSScriptRoot
+
+Robocopy . $fullPath /mir /XD .vscodke images .git .github CI __tests__ data mdHelp spikes /XF README.md README.original.md .gitattributes .gitignore filelist.txt install.ps1 InstallModule.ps1 PublishToGallery.ps1
+
+Pop-Location
