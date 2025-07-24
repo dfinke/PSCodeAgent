@@ -59,26 +59,30 @@ function New-Issue {
 function Start-CopilotWork {
     <#
     .SYNOPSIS
-        Creates Copilot-assigned issues in a specified GitHub repo.
+        Creates Copilot-assigned issues in specified GitHub repos.
     .DESCRIPTION
-        Checks if the repo exists, creates one or more issues with the given prompt(s), assigns @copilot, and outputs the issue URLs.
+        Checks if the repo(s) exist, creates one or more issues with the given prompt(s), assigns @copilot, and outputs the issue URLs.
         If -Path is provided, reads a markdown file and creates an issue for each section separated by '---'.
+        Both -Repo and -Work can accept arrays to create issues for all combinations.
     .PARAMETER Repo
-        The GitHub repository in the format owner/repo.
+        The GitHub repository or repositories in the format owner/repo. Can be a single repo or an array of repos.
     .PARAMETER Work
-        The issue body/prompt for Copilot.
+        The issue body/prompt(s) for Copilot. Can be a single string or an array of strings.
     .PARAMETER Path
         Path to a markdown file containing one or more issues separated by '---'.
     .EXAMPLE
-        Start-CopilotWork -Repo dfinke/trystuff 'need a greet fn in Rust'
+        Start-CopilotWork -Repo dfinke/trystuff -Work 'need a greet fn in Rust'
+    .EXAMPLE
+        Start-CopilotWork 'do it', 'do it x' dfinke/agenttodo, dfinke/trystuff
+    .EXAMPLE
         Start-CopilotWork -Repo dfinke/trystuff -Path .\issues.md
     #>
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
-        [string]$Repo,
+        [string[]]$Repo,
         [Parameter(Position = 1)]
-        [string]$Work,
+        [string[]]$Work,
         [Parameter()]
         [string]$Path,
         [Parameter()]
@@ -91,42 +95,29 @@ function Start-CopilotWork {
         return $str -match '^[^/]+/[^/]+$'
     }
 
-    # Allow Repo and Work to be provided in any order (positional or named)
+    # Normalize input to arrays
+    $Repo = @($Repo) | Where-Object { $_ }
+    $Work = @($Work) | Where-Object { $_ }
+
+    # Auto-detect and swap if needed based on repo format
     if ($Repo -and $Work) {
-        if (Test-RepoFormat $Repo -and -not (Test-RepoFormat $Work)) {
-            # $Repo and $Work are correct
-        }
-        elseif (Test-RepoFormat $Work -and -not (Test-RepoFormat $Repo)) {
-            # Swap if user provided in reverse order
-            $temp = $Repo
-            $Repo = $Work
-            $Work = $temp
-        }
-        elseif (-not (Test-RepoFormat $Repo) -and -not (Test-RepoFormat $Work)) {
-            throw "One argument must be a repo in the format owner/repo."
-        }
-        # else: both look like repos, ambiguous, you can throw or pick one
-    }
-    elseif ($Repo -and -not $Work) {
-        if (-not (Test-RepoFormat $Repo)) {
-            # Only one arg, treat as Work, try to get repo from current dir
-            $Work = $Repo
-            $Repo = $null
-        }
-    }
-    elseif ($Work -and -not $Repo) {
-        if (-not (Test-RepoFormat $Work)) {
-            # Only one arg, treat as Work, try to get repo from current dir
-            # $Work is already set, $Repo is null
-        }
-        else {
-            # Only one arg, and it's a repo, so need Work
-            throw "You must provide a work string if you specify a repo."
+        $repoLookingItems = @($Repo) + @($Work) | Where-Object { Test-RepoFormat $_ }
+        $workLookingItems = @($Repo) + @($Work) | Where-Object { -not (Test-RepoFormat $_) }
+        
+        if ($repoLookingItems.Count -gt 0 -and $workLookingItems.Count -gt 0) {
+            # We have both repo-formatted and non-repo-formatted items, so reassign
+            $Repo = $repoLookingItems
+            $Work = $workLookingItems
         }
     }
 
-    # If Repo is not provided, try to get it from the current directory using gh CLI
-    if (-not $Repo) {
+    # If neither Repo nor Work is provided, error
+    if (-not $Repo -and -not $Work -and -not $Path) {
+        throw "You must provide either -Work, -Repo, or -Path."
+    }
+
+    # If Repo is empty, try to get it from the current directory using gh CLI
+    if (-not $Repo -or $Repo.Count -eq 0) {
         if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
             Write-Host "The GitHub CLI 'gh' is not installed or not in PATH. Please install it." -ForegroundColor Yellow
             return
@@ -136,11 +127,17 @@ function Start-CopilotWork {
             Write-Host "Not in a GitHub repository directory. Please specify -Repo (owner/repo) or run in a git repo directory." -ForegroundColor Yellow
             return
         }
-        $Repo = "$($repoInfo.owner.login)/$($repoInfo.name)"
+        $Repo = @("$($repoInfo.owner.login)/$($repoInfo.name)")
     }
 
-    if (-not (Test-RepoExists -Name $Repo)) {
-        throw "Repository '$Repo' does not exist."
+    # Validate all repos
+    foreach ($r in $Repo) {
+        if (-not (Test-RepoFormat $r)) {
+            throw "Repo '$r' is not in the format owner/repo."
+        }
+        if (-not (Test-RepoExists -Name $r)) {
+            throw "Repository '$r' does not exist."
+        }
     }
 
     $results = @()
@@ -151,16 +148,17 @@ function Start-CopilotWork {
         }
         $content = Get-Content -Path $Path -Raw
         $sections = $content -split '(?m)^---\s*$' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
-        foreach ($section in $sections) {
-            $result = New-Issue -RepoName $Repo -Title "Copilot Request" -Body $section
-            if ($AssignCopilot -and $result) {
-                # Extract issue number from URL (assumes .../issues/<number>)
-                if ($result -match '/issues/(\d+)$') {
-                    $issueNumber = $matches[1]
-                    Set-CopilotIssueAssignee -Repo $Repo -IssueNumber $issueNumber
+        foreach ($r in $Repo) {
+            foreach ($section in $sections) {
+                $result = New-Issue -RepoName $r -Title "Copilot Request" -Body $section
+                if ($AssignCopilot -and $result) {
+                    if ($result -match '/issues/(\d+)$') {
+                        $issueNumber = $matches[1]
+                        Set-CopilotIssueAssignee -Repo $r -IssueNumber $issueNumber
+                    }
                 }
+                $results += $result
             }
-            $results += $result
         }
         if ($Show -and $results.Count -gt 0) {
             foreach ($url in $results) {
@@ -169,18 +167,23 @@ function Start-CopilotWork {
         }
         return $results
     }
-    elseif ($Work) {
-        $result = New-Issue -RepoName $Repo -Title "Copilot Request" -Body $Work
-        if ($AssignCopilot -and $result) {
-            if ($result -match '/issues/(\d+)$') {
-                $issueNumber = $matches[1]
-                Set-CopilotIssueAssignee -Repo $Repo -IssueNumber $issueNumber
+    elseif ($Work -and $Repo) {
+        foreach ($r in $Repo) {
+            foreach ($w in $Work) {
+                $result = New-Issue -RepoName $r -Title "Copilot Request" -Body $w
+                if ($AssignCopilot -and $result) {
+                    if ($result -match '/issues/(\d+)$') {
+                        $issueNumber = $matches[1]
+                        Set-CopilotIssueAssignee -Repo $r -IssueNumber $issueNumber
+                    }
+                }
+                if ($Show -and $result) {
+                    Start-Process $result
+                }
+                $results += $result
             }
         }
-        if ($Show -and $result) {
-            Start-Process $result
-        }
-        return $result
+        return $results
     }
     else {
         throw "You must provide either -Work or -Path with content."
