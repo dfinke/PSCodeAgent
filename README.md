@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The **PSCodeAgent** PowerShell module makes it easy to use the new GitHub Copilot Code 
+The **PSCodeAgent** PowerShell module makes it easy to use the new GitHub Copilot Code Agent
 
 **What is the GitHub Copilot Code Agent?**
 
