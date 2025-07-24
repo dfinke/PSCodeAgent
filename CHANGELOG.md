@@ -31,6 +31,20 @@ Start-CopilotWork -Work 'Single task' -Repo repo1, repo2, repo3
 Start-CopilotWork 'do it', 'do it x' dfinke/agenttodo, dfinke/trystuff
 ```
 
+### Added
+- **Progress Reporting**: Added timestamped progress messages throughout `Start-CopilotWork` function execution
+  - Progress messages now display with date and time in format: `[yyyy-MM-dd HH:mm:ss]`
+  - Messages shown for key operations: repository validation, issue creation, and Copilot assignment
+  - Progress indicators include:
+    - Repository location and validation status
+    - Issue creation confirmation with URLs
+    - Copilot assignment status
+    - Summary of completed operations
+
+### Enhanced
+- **User Experience**: Improved visibility into script execution progress with real-time status updates
+- **Debugging**: Easier troubleshooting with timestamped operation logs
+
 ## v0.1.0] - Initial Release
 
 ### Added
