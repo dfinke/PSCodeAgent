@@ -1,20 +1,15 @@
-<p a## Introduction
+<p align="center">
+  <img src="media/startCopilotWork.png" alt="startCopilotWork screenshot" width="300"/>
+</p>
 
-The **PSCodeAgent** PowerShell module makes it easy to use the new GitHub Copilot Code ## Notes
-- The repository must already exist.
-- For multiple issues, separate each issue in your markdown file with a line containing only `---`.
-- Both `-Work` and `-Repo` parameters accept arrays. When both are arrays, issues are created for all combinations (e.g., 2 work items × 3 repos = 6 issues).
-- The function automatically detects which parameters are repositories (owner/repo format) and which are work items, even when using positional parameters.
-- The module uses the GitHub CLI (`gh`) for all operations—no REST API calls or manual token setup required.
-- The module will output the URLs of the created issues. directly from the command line. With this module, you can create issues in any GitHub repository and assign them to the Copilot Code Agent, enabling Copilot to automatically pick up, work on, and deliver solutions for your requests.
+## Introduction
 
-The module supports creating multiple issues across multiple repositories in a single command using array parameters, making it efficient for batch operations and managing work across multiple projects.
+The **PSCodeAgent** PowerShell module makes it easy to use the new GitHub Copilot Code 
 
 **What is the GitHub Copilot Code Agent?**
 
 The Copilot Code Agent is an AI-powered automation tool from GitHub that can be assigned to issues in your repositories. When assigned, Copilot will analyze the issue, implement the requested changes or features, and open a pull request with the solution—all automatically. This module streamlines the process of creating and assigning issues to Copilot, so you can leverage AI-driven development workflows from your terminal or scripts.enter">
-  <img src="media/startCopilotWork.png" alt="startCopilotWork screenshot" width="300"/>
-</p>
+
 
 ## Introduction
 
@@ -117,8 +112,13 @@ To use the `Start-CopilotWork` PowerShell module for creating Copilot-assigned i
 ## Notes
 - The repository must already exist.
 - For multiple issues, separate each issue in your markdown file with a line containing only `---`.
-- The module uses the GitHub CLI (`gh`) for all operationsΓÇöno REST API calls or manual token setup required.
-- The module will output the URLs of the created issues.
+- Both `-Work` and `-Repo` parameters accept arrays. When both are arrays, issues are created for all combinations (e.g., 2 work items × 3 repos = 6 issues).
+- The function automatically detects which parameters are repositories (owner/repo format) and which are work items, even when using positional parameters.
+- The module uses the GitHub CLI (`gh`) for all operations—no REST API calls or manual token setup required.
+- The module will output the URLs of the created issues. directly from the command line. With this module, you can create issues in any GitHub repository and assign them to the Copilot Code Agent, enabling Copilot to automatically pick up, work on, and deliver solutions for your requests.
+
+The module supports creating multiple issues across multiple repositories in a single command using array parameters, making it efficient for batch operations and managing work across multiple projects.
+
 
 
 ## Example: Multi-Issue Markdown File
