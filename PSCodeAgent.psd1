@@ -6,7 +6,7 @@
     RootModule         = 'PSCodeAgent.psm1'
 
     # Version number of this module.
-    ModuleVersion      = '0.1.0'
+    ModuleVersion      = '0.2.0'
 
     # ID used to uniquely identify this module
     GUID               = '60dd4136-feff-401a-ba27-a84458c57ede'
