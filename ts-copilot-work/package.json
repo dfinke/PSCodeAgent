@@ -1,0 +1,55 @@
+{
+  "name": "start-copilot-work",
+  "version": "1.0.0",
+  "description": "A CLI tool to create GitHub issues and assign them to Copilot - TypeScript port of PSCodeAgent's Start-CopilotWork",
+  "main": "dist/index.js",
+  "bin": {
+    "start-copilot-work": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli.ts",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "github",
+    "copilot",
+    "cli",
+    "issues",
+    "automation",
+    "typescript",
+    "code-agent",
+    "github-cli"
+  ],
+  "author": "Doug Finke <dfinke@hotmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dfinke/PSCodeAgent.git",
+    "directory": "ts-copilot-work"
+  },
+  "bugs": {
+    "url": "https://github.com/dfinke/PSCodeAgent/issues"
+  },
+  "homepage": "https://github.com/dfinke/PSCodeAgent#readme",
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "preferGlobal": true,
+  "files": [
+    "dist/**/*",
+    "src/**/*",
+    "README.md",
+    "LICENSE"
+  ]
+}
