@@ -1,0 +1,36 @@
+{
+  "name": "start-copilot-work",
+  "version": "1.0.0",
+  "description": "A CLI tool to create GitHub issues and assign them to Copilot",
+  "main": "dist/index.js",
+  "bin": {
+    "start-copilot-work": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/cli.ts",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "github",
+    "copilot",
+    "cli",
+    "issues",
+    "automation"
+  ],
+  "author": "Doug Finke",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "preferGlobal": true
+}
